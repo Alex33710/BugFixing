@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 public class SpaceshipController : MonoBehaviour
 {
     public List<EnemySpaceShooter> Enemies;
@@ -10,13 +11,15 @@ public class SpaceshipController : MonoBehaviour
     public float BulletSpeed;
     public GameObject bulletPrefab;
     public Transform BulletSpawnHere;
-
+    public GameObject GameClearScreen;
     public TextMeshProUGUI textValue,hpValue;
     public int score;
     public int hitponts;
-
+    bool isGameClear = false;
     private int storeHP;
     public GameObject GameOverScreen;
+    private bool canMove = true;
+    private bool canShoot = true;
     // Start is called before the first frame update
     void Start()
     {
@@ -28,23 +31,35 @@ public class SpaceshipController : MonoBehaviour
     {
         textValue.text = score.ToString();
         hpValue.text = hitponts.ToString();
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && canShoot)
         {
             SpawnBullet(); 
         }
 
         if (hitponts <= 0)
         {
+            canShoot = false;
+            canMove = false;
             GameOverScreen.SetActive(true);
+            hitponts = 0;
         }
+        /*OnGameClear();
+        if (isGameClear && hitponts > 0)
+        {
+
+            isGameClear = false;
+
+        }*/
     }
 
     private void FixedUpdate()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        Vector3 moveInput = new Vector3(horizontalInput,0,0);
-        transform.position += Time.deltaTime * Speed * moveInput;
-
+        if (canMove)
+        {
+            float horizontalInput = Input.GetAxis("Horizontal");
+            Vector3 moveInput = new Vector3(horizontalInput, 0, 0);
+            transform.position += Time.deltaTime * Speed * moveInput;
+        }
     }
 
     public void SpawnBullet()
@@ -74,7 +89,11 @@ public class SpaceshipController : MonoBehaviour
             //Delays the call of a method in Ienumerator
             StartCoroutine(DelayEnemiesActive());
         }
+        canMove = true;
+        canShoot = true;
         hitponts = storeHP;
+        score = 0;
+        isGameClear = false;
         GameOverScreen.SetActive(false);
     }
     IEnumerator DelayEnemiesActive()
@@ -85,5 +104,25 @@ public class SpaceshipController : MonoBehaviour
             Enemies[i].gameObject.SetActive(true);
         }
     }
-
+    public void RestartLevel()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    public void OnGameClear()
+    {
+        isGameClear = true;
+        for (int i = 0; i < Enemies.Count; i++)
+        {
+            if (Enemies[i].gameObject.activeSelf)
+            {
+                isGameClear = false;
+                break;
+            }
+        }
+        if (isGameClear)
+        {
+            GameClearScreen.SetActive(true);
+        }
+    }
 }
+

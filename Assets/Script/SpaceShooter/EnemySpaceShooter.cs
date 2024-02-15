@@ -41,9 +41,8 @@ public class EnemySpaceShooter : MonoBehaviour
         }
         if (health <= 0)
         {
-            SpaceShip.score++;
             //Destroy(gameObject);
-            gameObject.SetActive(false);
+            //gameObject.SetActive(false);
         }
     }
 
@@ -52,6 +51,11 @@ public class EnemySpaceShooter : MonoBehaviour
         if (collision.CompareTag("Bullet"))
         {
             health--;
+            if (health <= 0)
+            {
+                SpaceShip.score++;
+                gameObject.SetActive(false);
+            }
             Destroy(collision.gameObject);
         }
     }
